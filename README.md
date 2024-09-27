@@ -1,4 +1,4 @@
-# Получение отзывов о врачах с сайтов СберЗдоровье и ПроДокторов
+## Получение отзывов о врачах с сайтов СберЗдоровье и ПроДокторов
 
 Поддерживаемые сайты с отзывами:
 - СберЗдоровье
@@ -13,5 +13,5 @@ platform=sberzdorovie & doctorUrl=https://docdoc.ru/doctor/Фамилия_Имя
 
 ***
 
-platform sberzdorovie или prodoctorov  
-doctorUrl ссылка на профиль врача
+*platform* = **sberzdorovie** или **prodoctorov**  
+*doctorUrl* = ссылка на профиль врача
