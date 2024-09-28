@@ -15,6 +15,9 @@ import (
 )
 
 const (
+	PLATFORM_SBERZDOROVIE = "sberzdorovie"
+	PLATFORM_PRODOCTOROV  = "prodoctorov"
+
 // searchURL = "https://ekb.docdoc.ru/doctor/Bayazitova_Diana"
 // searchURL = "https://prodoctorov.ru/ekaterinburg/vrach/919155-bayazitova/"
 // platform  = "prodoctorov"
@@ -32,11 +35,13 @@ func init() {
 }
 
 type Review struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Date    string `json:"date"`
-	Message string `json:"message"`
-	Source  string `json:"source"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Date       string `json:"isoDate"`
+	DateBeauty string `json:"date"`
+	Message    string `json:"message"`
+	Rating     string `json:"rating"`
+	Source     string `json:"source"`
 }
 
 type ApiResponse struct {
@@ -143,11 +148,11 @@ func runParser(platform string, doctorUrl string) []Review {
 
 func findReviews(result io.Reader, platform string) []Review {
 
-	if platform == "prodoctorov" {
+	if platform == PLATFORM_PRODOCTOROV {
 		return parseProdoctorov(result)
 	}
 
-	if platform == "sberzdorovie" {
+	if platform == PLATFORM_SBERZDOROVIE {
 		return parseSberzdorovie(result)
 	}
 
@@ -177,14 +182,18 @@ func parseProdoctorov(result io.Reader) []Review {
 		rid, _ := s.Find("div[itemprop='reviewBody']").Attr("data")
 		name := s.Find(".b-review-card__author-link").Text()
 		date := s.Find("div[itemprop='datePublished']").Text()
+		isoDate, _ := s.Find("div[itemprop='datePublished']").Attr("content")
 		message := s.Find(".b-review-card__comment").Text()
+		rating, _ := s.Find("meta[itemprop='ratingValue']").Attr("content")
 
 		r := Review{
-			ID:      rid,
-			Name:    trimAllSpace(name),
-			Date:    trimAllSpace(date),
-			Message: trimAllSpace(message),
-			Source:  "prodoctorov",
+			ID:         rid,
+			Name:       trimAllSpace(name),
+			Date:       isoDate,
+			DateBeauty: trimAllSpace(date),
+			Message:    trimAllSpace(message),
+			Rating:     rating,
+			Source:     PLATFORM_PRODOCTOROV,
 		}
 
 		reviews = append(reviews, r)
@@ -223,12 +232,21 @@ func parseSberzdorovie(result io.Reader) []Review {
 
 		rid := fmt.Sprintf("%.0f", review["id"])
 
+		rating := review["rating"].(map[string]interface{})
+
+		// Covert rating from 10 points to 100
+		ratingValue := rating["value"].(float64) * 10
+
+		ratingConverted := fmt.Sprintf("%.0f", ratingValue)
+
 		r := Review{
-			ID:      rid,
-			Name:    review["name"].(string),
-			Date:    review["date"].(string),
-			Message: review["text"].(string),
-			Source:  "sberzdorovie",
+			ID:         rid,
+			Name:       review["name"].(string),
+			Date:       review["isoDate"].(string),
+			DateBeauty: review["date"].(string),
+			Message:    review["text"].(string),
+			Rating:     ratingConverted,
+			Source:     PLATFORM_SBERZDOROVIE,
 		}
 
 		reviews = append(reviews, r)
