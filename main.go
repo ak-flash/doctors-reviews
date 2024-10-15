@@ -94,7 +94,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 			if reviews != nil {
 				resp = makeSuccessResponse(reviews)
-
+				fmt.Println("Success: ", len(reviews), " отзывов", platform, doctorUrl)
 			} else {
 				resp = makeErrorResponse(400, "Ошибка получения данных")
 			}
